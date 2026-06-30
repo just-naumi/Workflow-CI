@@ -33,11 +33,12 @@ jobs:
           MLFLOW_TRACKING_URI: "https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/Eksperimen_SML_naumi.mlflow"
         run: |
           cd MLProject
+          # Jalankan training
           mlflow run . --env-manager=local
 
-          # CARA AMAN: Ambil Run ID dari file .mlflow/run_id yang dibuat otomatis oleh mlflow
-          # Jika tidak ada, ambil dari list terakhir yang paling baru
-          RUN_ID=$(mlflow runs list --experiment-id 0 --max-results 1 --order-by 'start_time DESC' | awk 'NR==3 {print $1}')
+          # CARA PALING AKURAT: Gunakan Python untuk mencari ID run terbaru di experiment tersebut
+          RUN_ID=$(python -c "import mlflow; client = mlflow.tracking.MlflowClient(); runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'], max_results=1); print(runs[0].info.run_id)")
+
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "RUN_ID hasil deteksi: $RUN_ID"
 
