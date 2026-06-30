@@ -48,14 +48,14 @@ jobs:
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
           MLFLOW_TRACKING_URI: "https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/Eksperimen_SML_naumi.mlflow"
         run: |
-          # Validasi apakah RUN_ID kosong
-          if [ -z "${{ env.RUN_ID }}" ]; then
-            echo "Error: RUN_ID tidak ditemukan!"
-            exit 1
-          fi
+          # Ambil RUN_ID dari environment
+          echo "Building docker for Run ID: $RUN_ID"
 
-          # Eksekusi build dengan path yang benar
-          mlflow models build-docker -m "runs:/${{ env.RUN_ID }}/model" -n just-naumi/credit-model:latest
+          # Gunakan full tracking URI di perintah build agar tidak bingung
+          mlflow models build-docker \
+            --model-uri "runs:/$RUN_ID/model" \
+            --name "just-naumi/credit-model:latest" \
+            --env-manager=local
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2

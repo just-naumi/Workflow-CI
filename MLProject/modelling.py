@@ -21,10 +21,11 @@ X = df.drop('loan_status', axis=1)
 y = df['loan_status']
 
 # Training Sederhana
-with mlflow.start_run():
+with mlflow.start_run() as run:
     model = RandomForestClassifier()
     model.fit(X, y)
     
-    predictions = model.predict(X)
-    acc = accuracy_score(y, predictions)
-    print(f"Model trained with accuracy: {acc}")
+    # Simpan dengan nama 'model' agar bisa dibaca oleh build-docker
+    mlflow.sklearn.log_model(model, artifact_path="model")
+    
+    print(f"Model logged with run_id: {run.info.run_id}")
