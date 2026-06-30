@@ -47,12 +47,12 @@ jobs:
           MLFLOW_TRACKING_URI: "https://dagshub.com/${{ secrets.DAGSHUB_USERNAME }}/Eksperimen_SML_naumi.mlflow"
         run: |
           python -c "
-import mlflow; 
-client = mlflow.tracking.MlflowClient(); 
-runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'], max_results=1); 
-with open('run_id.txt', 'w') as f:
-    f.write(runs[0].info.run_id)
-"
+          import mlflow; 
+          client = mlflow.tracking.MlflowClient(); 
+          runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'], max_results=1); 
+          with open('run_id.txt', 'w') as f:
+              f.write(runs[0].info.run_id)
+          "
 
       - name: Build Docker Model
         env:
