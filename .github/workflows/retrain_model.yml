@@ -34,7 +34,7 @@ jobs:
         run: |
           cd MLProject
           # Menjalankan retraining otomatis via MLflow
-          mlflow run . 
+          mlflow run . --no-conda
 
           # Mengambil RUN_ID terbaru untuk build docker
           RUN_ID=$(mlflow runs list --experiment-id 0 --max-results 1 | awk 'NR==3 {print $1}')
