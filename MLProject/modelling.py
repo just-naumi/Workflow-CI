@@ -22,8 +22,13 @@ y = df['loan_status']
 
 # Training Sederhana
 with mlflow.start_run() as run:
-    model = RandomForestClassifier()
+    params = {"n_estimators": 100, "max_depth": 5}
+    model = RandomForestClassifier(**params)
     model.fit(X, y)
+    
+    predictions = model.predict(X)
+    acc = accuracy_score(y, predictions)
+    print(f"Model trained with accuracy: {acc}")
     
     # Simpan dengan nama 'model' agar bisa dibaca oleh build-docker
     mlflow.sklearn.log_model(model, artifact_path="model")
