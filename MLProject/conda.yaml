@@ -1,4 +1,3 @@
-#Conda
 name: mlflow-env
 channels:
   - conda-forge
@@ -9,5 +8,4 @@ dependencies:
       - mlflow
       - pandas
       - scikit-learn
-      - matplotlib
       - dagshub
