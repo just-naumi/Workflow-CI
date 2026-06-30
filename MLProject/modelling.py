@@ -3,17 +3,13 @@ import mlflow.sklearn
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-import dagshub
+import os
 
-# Inisialisasi DagsHub agar koneksi lebih stabil di GitHub Actions
-dagshub.init(repo_owner="just-naumi", repo_name="Eksperimen_SML_naumi", mlflow=True)
+# Gunakan env vars yang sudah diset oleh GitHub Actions workflow
+# (MLFLOW_TRACKING_URI, MLFLOW_TRACKING_USERNAME, MLFLOW_TRACKING_PASSWORD)
+# Tidak perlu dagshub.init() agar tidak ada konflik dengan run context
 
-# Set tracking URI ke DagsHub
-mlflow.set_tracking_uri("https://dagshub.com/just-naumi/Eksperimen_SML_naumi.mlflow")
 mlflow.set_experiment("Latihan Credit Scoring")
-
-# Nonaktifkan autolog agar artifact path bisa dikontrol manual
-# (autolog menyimpan ke path "model" juga, tapi kita pastikan eksplisit)
 mlflow.sklearn.autolog(log_models=False)
 
 # Load Data Bersih
@@ -30,9 +26,23 @@ with mlflow.start_run() as run:
     predictions = model.predict(X)
     acc = accuracy_score(y, predictions)
     print(f"Model trained with accuracy: {acc}")
+    mlflow.log_param("n_estimators", params["n_estimators"])
+    mlflow.log_param("max_depth", params["max_depth"])
     mlflow.log_metric("accuracy", acc)
 
-    # Simpan model dengan artifact_path="model" agar bisa dibaca oleh mlflow build-docker
+    # 1. Log ke DagsHub untuk tracking (opsional, tidak diandalkan untuk build-docker)
     mlflow.sklearn.log_model(model, artifact_path="model")
 
-    print(f"Model logged with run_id: {run.info.run_id}")
+    # 2. Simpan model ke lokal agar bisa digunakan untuk build-docker
+    #    tanpa bergantung pada download dari DagsHub
+    local_model_path = "saved_model"
+    mlflow.sklearn.save_model(model, local_model_path)
+    print(f"Model disimpan lokal di: {local_model_path}")
+
+    run_id = run.info.run_id
+    print(f"Model logged dengan run_id: {run_id}")
+
+    # Simpan run_id ke file untuk digunakan step berikutnya di CI
+    with open('run_id.txt', 'w') as f:
+        f.write(run_id)
+    print(f"run_id disimpan ke run_id.txt: {run_id}")
